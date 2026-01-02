@@ -46,9 +46,6 @@ fn main() -> Result<(), Error> {
     let mut feedback = MaxMapFeedback::new(&edges_observer);
     let mut objective = MaxMapFeedback::new(&edges_observer);
 
-    // Scheduler: QueueScheduler selects inputs from corpus
-    let scheduler = QueueScheduler::new();
-
     // Corpus: store interesting inputs
     let corpus_dir = PathBuf::from("./corpus");
     std::fs::create_dir_all(&corpus_dir).ok();
@@ -87,6 +84,12 @@ fn main() -> Result<(), Error> {
         &mut objective,
     )?;
 
+    // Scheduler: QueueScheduler selects inputs from corpus
+    let scheduler = QueueScheduler::new();
+
+    // Fuzzer: orchestrates the fuzzing loop
+    let mut fuzzer = StdFuzzer::new(scheduler, feedback, objective);
+
     // Monitor: displays progress
     let monitor = SimpleMonitor::new(|s| println!("{}", s));
 
@@ -94,14 +97,13 @@ fn main() -> Result<(), Error> {
     let mut mgr = SimpleEventManager::new(monitor);
 
     // Executor: runs the target function and collects coverage
-    // InProcessExecutor::new signature: (harness, observers, state, mgr, objective)
-    // The 5th argument appears to be &mut objective based on the generic <OF>
+    // InProcessExecutor::new signature: (harness, observers, fuzzer, state, mgr)
     let mut executor = InProcessExecutor::new(
         &mut target_function,
         tuple_list!(edges_observer, time_observer),
+        &mut fuzzer,
         &mut state,
         &mut mgr,
-        &mut objective,
     )?;
 
     // Mutators: create variations of inputs
@@ -121,9 +123,6 @@ fn main() -> Result<(), Error> {
     let mut stages = tuple_list!(
         MutationalStage::new(havoc_mutator),
     );
-
-    // Fuzzer: orchestrates the fuzzing loop
-    let mut fuzzer = StdFuzzer::new(scheduler, feedback, objective);
 
     // Start fuzzing loop - this is the main fuzzing engine
     println!("[IFB] 🏃 Starting coverage-guided fuzzing loop...");
