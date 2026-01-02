@@ -1,10 +1,7 @@
 /*
- * IFB Wrapper Header (template)
+ * IFB Wrapper Header for cURL
  *
- * TODO: Include your target headers here so bindgen sees the full surface area.
- * Example:
- *   #include "httpd.h"
- *   #include "target_api.h"
+ * Include cURL headers for fuzzing
  */
 
-// TODO: Add your target includes below.
+#include <curl/curl.h>

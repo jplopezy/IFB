@@ -39,4 +39,10 @@ fn main() {
             println!("cargo:rustc-link-lib=static={lib}");
         }
     }
+
+    // Add dynamic libraries
+    println!("cargo:rustc-link-lib=psl");
+
+    // Add ASan library since cURL was compiled with ASan
+    println!("cargo:rustc-link-lib=asan");
 }

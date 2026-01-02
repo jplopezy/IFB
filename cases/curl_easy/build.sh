@@ -40,6 +40,14 @@ LDFLAGS="${LDFLAGS}" \
   --disable-ldap \
   --disable-ldaps \
   --without-ssl \
+  --disable-psl \
+  --disable-libgsasl \
+  --disable-ntlm \
+  --disable-ntlm-wb \
+  --without-libidn2 \
+  --without-brotli \
+  --without-zstd \
+  --without-zlib \
   --prefix="${PREFIX_DIR}"
 
 make -j"$(nproc)"
