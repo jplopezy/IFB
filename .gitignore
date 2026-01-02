@@ -1,0 +1,10 @@
+/target/
+/build/
+**/*.a
+**/*.o
+**/*.so
+/corpus/
+/crashes/
+*.log
+.DS_Store
+wrapper.h.gch

@@ -26,7 +26,7 @@
    ```
 
 2. **Define your headers and libs**
-   - See `fuzzer_core/headers.h` and `fuzzer_core/build.rs`.
+   - See `fuzzer_core/src/wrapper.h` and `fuzzer_core/build.rs`.
 
 3. **Implement the harness**
    - `fuzzer_core/src/harness/mod.rs`
@@ -47,6 +47,19 @@
 
 ---
 
+## 🧠 Neuro Mutator (Experimental)
+
+Experimental: Requires a local LLM server (e.g., Ollama/vLLM) running on port 8000.
+
+---
+
+## 🧯 Troubleshooting
+
+1. **Linker Error: Multiple definition of main**  
+   You forgot to run `ar d libtarget.a main.o`.
+
+---
+
 ## 📁 Repo Layout
 
 ```
@@ -61,8 +74,8 @@ project-ifb/
   ├── fuzzer_core/
   │   ├── Cargo.toml
   │   ├── build.rs
-  │   ├── headers.h
   │   └── src/
+  │       ├── wrapper.h
   │       ├── bin/
   │       │   └── fuzzer_main.rs
   │       ├── bindings/

@@ -9,10 +9,11 @@ pub fn init_target() {
 
 // 2. The Fuzzing Loop
 pub fn fuzz_iteration(input: &[u8]) {
-    unsafe {
+    // Prevent Rust panics from killing the fuzzer process (LibAFL needs stability).
+    let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| unsafe {
         // TODO: Setup per-iteration context (Pools, Structs)
         // TODO: Call target entrypoint(input)
         // TODO: Teardown/Reset
         let _ = input;
-    }
+    }));
 }
