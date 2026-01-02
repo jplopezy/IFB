@@ -1,0 +1,3 @@
+[workspace]
+members = ["fuzzer_core"]
+resolver = "2"

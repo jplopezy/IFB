@@ -8,6 +8,5 @@
 *.log
 .DS_Store
 wrapper.h.gch
-Cargo.lock
 *.pyc
 __pycache__/

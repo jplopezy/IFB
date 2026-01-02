@@ -35,19 +35,16 @@ pub const HTTP_REQUEST_HEADERS: &[&str] = &[
     "User-Agent",
     "Via",
     "Warning",
-    
     // Common non-standard headers
     "X-Forwarded-For",
     "X-Forwarded-Proto",
     "X-Real-IP",
     "X-Requested-With",
     "X-Custom-Header",
-    
     // Security headers
     "X-Frame-Options",
     "X-Content-Type-Options",
     "X-XSS-Protection",
-    
     // Malformed for fuzzing
     "",
     " ",
@@ -79,23 +76,20 @@ pub const HTTP_RESPONSE_HEADERS: &[&str] = &[
     "Retry-After",
     "Server",
     "Set-Cookie",
-    "Strict-Transport-Security",  // HSTS
+    "Strict-Transport-Security", // HSTS
     "Transfer-Encoding",
     "Upgrade",
     "Vary",
     "Via",
     "Warning",
     "WWW-Authenticate",
-    
     // Alt-Svc (RFC 7838)
     "Alt-Svc",
-    
     // Security headers
     "X-Frame-Options",
     "X-Content-Type-Options",
     "X-XSS-Protection",
     "Content-Security-Policy",
-    
     // Malformed for fuzzing
     "",
     " ",
@@ -106,18 +100,9 @@ pub const HTTP_RESPONSE_HEADERS: &[&str] = &[
 
 /// Common HTTP Methods
 pub const HTTP_METHODS: &[&str] = &[
-    "GET",
-    "POST",
-    "PUT",
-    "DELETE",
-    "HEAD",
-    "OPTIONS",
-    "PATCH",
-    "TRACE",
-    "CONNECT",
+    "GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH", "TRACE", "CONNECT",
     // Invalid for fuzzing
-    "",
-    "INVALID",
+    "", "INVALID",
 ];
 
 /// Common URL Path Patterns for Fuzzing
@@ -141,8 +126,8 @@ pub const URL_PATHS: &[&str] = &[
     "/path?query",
     "/path#fragment",
     "/path/with/many/segments",
-    "/%C0%AF",  // UTF-8 overlong encoding
-    "/%E0%80%AF",  // UTF-8 overlong
+    "/%C0%AF",    // UTF-8 overlong encoding
+    "/%E0%80%AF", // UTF-8 overlong
     "//",
     "///",
     "/path//",
@@ -168,13 +153,7 @@ pub const URL_QUERIES: &[&str] = &[
 ];
 
 /// Common URL Fragment Patterns
-pub const URL_FRAGMENTS: &[&str] = &[
-    "#",
-    "#section",
-    "#%00",
-    "#%FF",
-    "#section%00",
-];
+pub const URL_FRAGMENTS: &[&str] = &["#", "#section", "#%00", "#%FF", "#section%00"];
 
 /// Common Host Patterns for Fuzzing
 pub const URL_HOSTS: &[&str] = &[
@@ -185,13 +164,13 @@ pub const URL_HOSTS: &[&str] = &[
     "example.com",
     "test.com",
     "subdomain.example.com",
-    "[::1]",  // IPv6
-    "[::]",   // IPv6
-    "[2001:db8::1]",  // IPv6
+    "[::1]",         // IPv6
+    "[::]",          // IPv6
+    "[2001:db8::1]", // IPv6
     "localhost.localdomain",
     ".",  // Invalid
-    "..",  // Invalid
-    "",  // Invalid
+    "..", // Invalid
+    "",   // Invalid
 ];
 
 /// Common Port Numbers
@@ -252,14 +231,11 @@ pub const URL_SCHEMES: &[&str] = &[
     // HTTP protocols
     "http://",
     "https://",
-    
     // File protocols
     "file://",
-    
     // FTP protocols
     "ftp://",
     "ftps://",
-    
     // Email protocols
     "imap://",
     "imaps://",
@@ -267,11 +243,9 @@ pub const URL_SCHEMES: &[&str] = &[
     "pop3s://",
     "smtp://",
     "smtps://",
-    
     // Directory protocols
     "ldap://",
     "ldaps://",
-    
     // Other protocols
     "dict://",
     "gopher://",
@@ -290,11 +264,9 @@ pub const URL_SCHEMES: &[&str] = &[
     "smbs://",
     "mqtt://",
     "mqtts://",
-    
     // WebSocket
     "ws://",
     "wss://",
-    
     // Invalid/malformed for fuzzing
     "://",
     "",
@@ -310,7 +282,6 @@ pub const CURL_OPTIONS: &[&str] = &[
     "CURLOPT_URL",
     "CURLOPT_TIMEOUT",
     "CURLOPT_CONNECTTIMEOUT",
-    
     // HTTP specific
     "CURLOPT_HTTPHEADER",
     "CURLOPT_USERAGENT",
@@ -327,7 +298,6 @@ pub const CURL_OPTIONS: &[&str] = &[
     "CURLOPT_HTTP_VERSION",
     "CURLOPT_FOLLOWLOCATION",
     "CURLOPT_MAXREDIRS",
-    
     // Authentication
     "CURLOPT_USERPWD",
     "CURLOPT_HTTPAUTH",
@@ -335,7 +305,6 @@ pub const CURL_OPTIONS: &[&str] = &[
     "CURLOPT_PASSWORD",
     "CURLOPT_XOAUTH2_BEARER",
     "CURLOPT_LOGIN_OPTIONS",
-    
     // Security
     "CURLOPT_SSL_VERIFYPEER",
     "CURLOPT_SSL_VERIFYHOST",
@@ -345,12 +314,10 @@ pub const CURL_OPTIONS: &[&str] = &[
     "CURLOPT_SSH_HOST_PUBLIC_KEY_SHA256",
     "CURLOPT_HSTS",
     "CURLOPT_HSTS_CTRL",
-    
     // Headers
     "CURLOPT_HEADER",
     "CURLOPT_HEADERFUNCTION",
     "CURLOPT_HEADERDATA",
-    
     // Callbacks
     "CURLOPT_WRITEFUNCTION",
     "CURLOPT_READFUNCTION",
@@ -420,7 +387,10 @@ Use this knowledge to generate intelligent mutations that explore edge cases and
         URL_QUERIES.join(", "),
         URL_FRAGMENTS.join(", "),
         URL_HOSTS.join(", "),
-        URL_PORTS.iter().map(|p| p.to_string()).collect::<Vec<_>>().join(", ")
+        URL_PORTS
+            .iter()
+            .map(|p| p.to_string())
+            .collect::<Vec<_>>()
+            .join(", ")
     )
 }
-

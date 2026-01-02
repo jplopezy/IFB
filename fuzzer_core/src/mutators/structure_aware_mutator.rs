@@ -5,8 +5,8 @@ use libafl::prelude::*;
 use libafl_bolts::rands::Rand;
 use std::num::NonZeroUsize;
 
-use super::url_parser::{ParsedURL, URLComponent};
 use super::curl_knowledge::*;
+use super::url_parser::{ParsedURL, URLComponent};
 
 // Note: We removed StructureAwareMetadata because ValueInput doesn't support metadata directly.
 // Metadata is stored in Testcase, not in Input. The coverage feedback will track which inputs are interesting.
@@ -36,11 +36,18 @@ impl StructureAwareMutator {
         match component {
             URLComponent::Scheme => {
                 // Mutate scheme from knowledge base
-                if state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(100) }) < 30 {
+                if state
+                    .rand_mut()
+                    .below(unsafe { NonZeroUsize::new_unchecked(100) })
+                    < 30
+                {
                     // 30% chance to use a random scheme from knowledge base
                     let len = URL_SCHEMES.len();
                     if len > 0 {
-                        URL_SCHEMES[state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(len) })].to_string()
+                        URL_SCHEMES[state
+                            .rand_mut()
+                            .below(unsafe { NonZeroUsize::new_unchecked(len) })]
+                        .to_string()
                     } else {
                         Self::mutate_string(value, state)
                     }
@@ -50,10 +57,17 @@ impl StructureAwareMutator {
                 }
             }
             URLComponent::Host => {
-                if state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(100) }) < 30 {
+                if state
+                    .rand_mut()
+                    .below(unsafe { NonZeroUsize::new_unchecked(100) })
+                    < 30
+                {
                     let len = URL_HOSTS.len();
                     if len > 0 {
-                        URL_HOSTS[state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(len) })].to_string()
+                        URL_HOSTS[state
+                            .rand_mut()
+                            .below(unsafe { NonZeroUsize::new_unchecked(len) })]
+                        .to_string()
                     } else {
                         Self::mutate_string(value, state)
                     }
@@ -62,10 +76,17 @@ impl StructureAwareMutator {
                 }
             }
             URLComponent::Path => {
-                if state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(100) }) < 30 {
+                if state
+                    .rand_mut()
+                    .below(unsafe { NonZeroUsize::new_unchecked(100) })
+                    < 30
+                {
                     let len = URL_PATHS.len();
                     if len > 0 {
-                        URL_PATHS[state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(len) })].to_string()
+                        URL_PATHS[state
+                            .rand_mut()
+                            .below(unsafe { NonZeroUsize::new_unchecked(len) })]
+                        .to_string()
                     } else {
                         Self::mutate_string(value, state)
                     }
@@ -74,10 +95,17 @@ impl StructureAwareMutator {
                 }
             }
             URLComponent::Query => {
-                if state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(100) }) < 30 {
+                if state
+                    .rand_mut()
+                    .below(unsafe { NonZeroUsize::new_unchecked(100) })
+                    < 30
+                {
                     let len = URL_QUERIES.len();
                     if len > 0 {
-                        URL_QUERIES[state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(len) })].to_string()
+                        URL_QUERIES[state
+                            .rand_mut()
+                            .below(unsafe { NonZeroUsize::new_unchecked(len) })]
+                        .to_string()
                     } else {
                         Self::mutate_string(value, state)
                     }
@@ -86,10 +114,17 @@ impl StructureAwareMutator {
                 }
             }
             URLComponent::Fragment => {
-                if state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(100) }) < 30 {
+                if state
+                    .rand_mut()
+                    .below(unsafe { NonZeroUsize::new_unchecked(100) })
+                    < 30
+                {
                     let len = URL_FRAGMENTS.len();
                     if len > 0 {
-                        URL_FRAGMENTS[state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(len) })].to_string()
+                        URL_FRAGMENTS[state
+                            .rand_mut()
+                            .below(unsafe { NonZeroUsize::new_unchecked(len) })]
+                        .to_string()
                     } else {
                         Self::mutate_string(value, state)
                     }
@@ -98,10 +133,17 @@ impl StructureAwareMutator {
                 }
             }
             URLComponent::Port => {
-                if state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(100) }) < 50 {
+                if state
+                    .rand_mut()
+                    .below(unsafe { NonZeroUsize::new_unchecked(100) })
+                    < 50
+                {
                     let len = URL_PORTS.len();
                     if len > 0 {
-                        URL_PORTS[state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(len) })].to_string()
+                        URL_PORTS[state
+                            .rand_mut()
+                            .below(unsafe { NonZeroUsize::new_unchecked(len) })]
+                        .to_string()
                     } else {
                         Self::mutate_string(value, state)
                     }
@@ -109,51 +151,68 @@ impl StructureAwareMutator {
                     Self::mutate_string(value, state)
                 }
             }
-            URLComponent::UserInfo => {
-                Self::mutate_string(value, state)
-            }
+            URLComponent::UserInfo => Self::mutate_string(value, state),
         }
     }
 
     /// Simple string mutation (insert, delete, replace, flip)
     fn mutate_string(s: &str, state: &mut impl HasRand) -> String {
         let mut result = s.to_string();
-        let mutation_type = state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(4) });
-        
+        let mutation_type = state
+            .rand_mut()
+            .below(unsafe { NonZeroUsize::new_unchecked(4) });
+
         match mutation_type {
             0 => {
                 // Insert random character
-                let pos = if result.is_empty() { 
-                    0 
-                } else { 
-                    state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(result.len()) })
+                let pos = if result.is_empty() {
+                    0
+                } else {
+                    state
+                        .rand_mut()
+                        .below(unsafe { NonZeroUsize::new_unchecked(result.len()) })
                 };
-                let ch = (state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(256) }) as u8) as char;
+                let ch = (state
+                    .rand_mut()
+                    .below(unsafe { NonZeroUsize::new_unchecked(256) })
+                    as u8) as char;
                 result.insert(pos, ch);
             }
             1 => {
                 // Delete character
                 if !result.is_empty() {
-                    let pos = state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(result.len()) });
+                    let pos = state
+                        .rand_mut()
+                        .below(unsafe { NonZeroUsize::new_unchecked(result.len()) });
                     result.remove(pos);
                 }
             }
             2 => {
                 // Replace character
                 if !result.is_empty() {
-                    let pos = state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(result.len()) });
-                    let ch = (state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(256) }) as u8) as char;
+                    let pos = state
+                        .rand_mut()
+                        .below(unsafe { NonZeroUsize::new_unchecked(result.len()) });
+                    let ch = (state
+                        .rand_mut()
+                        .below(unsafe { NonZeroUsize::new_unchecked(256) })
+                        as u8) as char;
                     result.replace_range(pos..=pos, &ch.to_string());
                 }
             }
             _ => {
                 // Flip bit
                 if !result.is_empty() {
-                    let pos = state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(result.len()) });
+                    let pos = state
+                        .rand_mut()
+                        .below(unsafe { NonZeroUsize::new_unchecked(result.len()) });
                     if let Some(ch) = result.chars().nth(pos) {
                         let mut bytes = ch.to_string().into_bytes();
                         if !bytes.is_empty() {
-                            bytes[0] ^= 1 << state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(8) });
+                            bytes[0] ^= 1
+                                << state
+                                    .rand_mut()
+                                    .below(unsafe { NonZeroUsize::new_unchecked(8) });
                             if let Ok(new_str) = String::from_utf8(bytes) {
                                 result.replace_range(pos..=pos, &new_str);
                             }
@@ -162,7 +221,7 @@ impl StructureAwareMutator {
                 }
             }
         }
-        
+
         result
     }
 }
@@ -189,7 +248,11 @@ where
         input: &mut ValueInput<Vec<u8>>,
     ) -> Result<MutationResult, Error> {
         // Decide: structure-aware or raw bytes?
-        if state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(100) }) < self.structure_aware_prob as usize {
+        if state
+            .rand_mut()
+            .below(unsafe { NonZeroUsize::new_unchecked(100) })
+            < self.structure_aware_prob as usize
+        {
             // Structure-aware mutation
             let bytes = input.sub_bytes(..);
             let input_str = match std::str::from_utf8(bytes.as_slice()) {
@@ -223,7 +286,9 @@ where
                 URLComponent::Fragment,
                 URLComponent::Port,
             ];
-            let component = components[state.rand_mut().below(unsafe { NonZeroUsize::new_unchecked(components.len()) })];
+            let component = components[state
+                .rand_mut()
+                .below(unsafe { NonZeroUsize::new_unchecked(components.len()) })];
 
             // Mutate selected component
             let current_value = parsed.get_component(component).to_string();
@@ -250,4 +315,3 @@ where
         Ok(())
     }
 }
-

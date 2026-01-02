@@ -1,124 +1,60 @@
-# 🚀 Instalación de Fuzzing Berreta (IFB)
-> *High Performance. Static Linking. Zero Sockets.*
+# IFB (Instalación de Fuzzing Berreta)
 
-**Instalación de Fuzzing Berreta (IFB)** is a straight-to-the-point template for high-performance **in-process** fuzzing with Rust + LibAFL. If your target is C/C++ and you want real speed (100k exec/s), this is your starting line.
+IFB is a high-throughput, in-process LibAFL fuzzer template focused on coverage-guided fuzzing. The default path is **no-LLM** and optimized for throughput. LLM support is **opt-in** and only used for **seed injection when the fuzzer stagnates**.
 
----
+## Build (reproducible)
 
-## 💥 Why IFB?
-
-> Stop using sockets. Fuzz at 100k exec/s by linking your target as a library.
-
-**IFB = single binary, no forks, no network, no overhead.**
-
-- 🚀 **Speed**: eliminates `fork()` and kernel overhead (up to ~50x faster than AFL++).
-- 🧠 **Smart**: LibAFL-powered architecture.
-- 🛠 **Static**: guides you to link `.a` archives directly into the fuzzer.
-- 🩹 **Conflict Resolver**: patterns to handle `main()` symbol collisions.
-
----
-
-## ⚡ Quick Start
-
-1. **Edit the target builder**
-   ```bash
-   nano scripts/build_target.sh
-   ```
-
-2. **Define your headers and libs**
-   - See `fuzzer_core/src/wrapper.h` and `fuzzer_core/build.rs`.
-
-3. **Implement the harness**
-   - `fuzzer_core/src/harness/mod.rs`
-
-4. **Fuzz**
-   ```bash
-   cd fuzzer_core
-   cargo run --release
-   ```
-
----
-
-## 🛠 Requirements
-
-- Docker
-- Rust Nightly
-- Clang 18+
-
----
-
-## 🧬 Neuro Mutator (Evolutionary AI)
-
-**Revolutionary**: Feedback-driven evolutionary fuzzing using local LLM server (Ollama/vLLM) on port 8000.
-
-### 🔥 Evolutionary Features
-- **Stateful Evolution**: Remembers successful mutations via LibAFL metadata
-- **Adaptive Probability**: 1% → 10% during "hot streaks"
-- **Contextual Prompts**: LLM receives history for smarter mutations
-- **Generational Evolution**: Successful inputs spawn more aggressive variations
-
-### Setup & Usage
 ```bash
-# Install & start Ollama
-curl -fsSL https://ollama.ai/install.sh | sh
-ollama serve & ollama pull llama2:7b
+./scripts/setup.sh
+./scripts/build_release.sh
+```
 
-# Build evolutionary fuzzer
-cd fuzzer_core
+This repo pins the Rust toolchain in `rust-toolchain.toml` and uses a locked dependency graph (`Cargo.lock`). See [docs/BUILD.md](docs/BUILD.md) for update instructions.
+
+## Run baseline (no LLM)
+
+```bash
+./target/release/fuzzer_main --stats-interval 5
+```
+
+Notes:
+- Default target is libcurl (fast URL parsing path).
+- To run a fast local dummy target (no external dependencies), set:
+
+```bash
+IFB_TARGET=dummy ./target/release/fuzzer_main --stats-interval 2
+```
+
+## Optional LLM seed injection
+
+LLM support is **opt-in** and never runs in the hot loop. It only triggers when the fuzzer stagnates (no new coverage for a configurable time).
+
+```bash
 cargo build --release --features llm
-
-# Evolve bugs intelligently
-export IFB_LLM_URL="http://127.0.0.1:8000/v1/chat/completions"
-./target/release/fuzzer_main
+# Either provide a local URL...
+export IFB_LLM_URL="http://127.0.0.1:11434/api/generate"
+# ...or set an API key (for external providers)
+export OPENAI_API_KEY="..."
+./target/release/fuzzer_main \
+  --stats-interval 5 \
+  --llm-stagnation-secs 30 \
+  --llm-batch 4
 ```
 
-### Evolution Results
-- **Input Size**: **40x larger** (1383-2128 bytes vs 20-50 bytes)
-- **Complexity**: **Semantic payloads** (HTML, CSS, encoding attacks) vs random bits
-- **Uniqueness**: **AI-generated inputs** that traditional algorithms cannot create
-- **Coverage**: **Deeper semantic testing** beyond local mutations
-- **Innovation**: **First evolutionary fuzzing** with proven intelligence advantage
+When enabled you will see logs for:
+- stagnation trigger,
+- LLM batch size,
+- seeds rejected by sanitization,
+- seeds accepted into corpus after positive signal.
 
-*See `EVOLUTIONARY_LLM_GUIDE.md` for complete technical details.*
+## Smoke test
 
----
-
-## 🧯 Troubleshooting
-
-1. **Linker Error: Multiple definition of main**  
-   You forgot to run `ar d libtarget.a main.o`.
-
----
-
-## 📁 Repo Layout
-
-```
-project-ifb/
-  ├── README.md
-  ├── TARGET_CONFIG.md
-  ├── docker/
-  │   └── Dockerfile
-  ├── scripts/
-  │   ├── build_target.sh
-  │   └── setup_env.sh
-  ├── fuzzer_core/
-  │   ├── Cargo.toml
-  │   ├── build.rs
-  │   └── src/
-  │       ├── wrapper.h
-  │       ├── bin/
-  │       │   └── fuzzer_main.rs
-  │       ├── bindings/
-  │       │   └── mod.rs
-  │       ├── harness/
-  │       │   └── mod.rs
-  │       └── mutators/
-  │           └── neuro_mutator.rs
-  └── docs/
-      ├── ARCHITECTURE.md
-      └── TROUBLESHOOTING.md
+```bash
+./scripts/smoke_run.sh
 ```
 
----
+## Documentation
 
-*Created by Juan Pablo Lopez Yacubian — Instalación de Fuzzing Berreta (IFB).* 
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [docs/BUILD.md](docs/BUILD.md)
+- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)

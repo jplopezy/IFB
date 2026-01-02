@@ -1,13 +1,25 @@
 # IFB Troubleshooting
 
+## Build fails: libcurl not found
+
+- Ensure the libcurl dev package is installed.
+- `scripts/setup.sh` checks `pkg-config --exists libcurl`.
+
+For a custom static build, set:
+- `IFB_STATIC_LIB_DIR`
+- `IFB_STATIC_LIBS`
+- `IFB_INCLUDE_DIR`
+
 ## Linker errors (duplicate main)
 
-- Remove `main.o` from the static library:
-  ```bash
-  ar d build/lib/libtarget.a main.o
-  ```
+If you link a static target library that contains `main`, remove it:
 
-## Missing symbols
+```bash
+ar d build/lib/libtarget.a main.o
+```
 
-- Verify `IFB_STATIC_LIB_DIR` and `IFB_STATIC_LIBS` are set.
-- Ensure all dependencies are linked statically.
+## LLM not activating
+
+- Build with `--features llm`.
+- Export either `OPENAI_API_KEY` or `IFB_LLM_URL`.
+- Check logs for: `LLM disabled` or `LLM seed injection enabled`.
