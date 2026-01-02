@@ -1,16 +1,16 @@
+use std::env;
 use std::time::Duration;
 
-use libafl::inputs::BytesInput;
+use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::mutators::{MutationResult, Mutator};
-use libafl::prelude::Named;
-use libafl::state::HasRand;
+use libafl::prelude::{HasRand, Named};
 use libafl::Error;
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 
 const DEFAULT_API_URL: &str = "http://127.0.0.1:8000/v1/chat/completions";
-const SYSTEM_PROMPT: &str = "You are a fuzzing mutation engine. Mutate this input to cause edge cases. Return ONLY the raw string.";
-const LLM_URL_ENV: &str = "IFB_LLM_URL";
+const SYSTEM_PROMPT: &str =
+    "You are a fuzzing mutation engine. Mutate this input to cause edge cases. Return ONLY the raw string.";
 
 #[derive(Debug, Clone)]
 pub struct LLMMutator {
@@ -20,11 +20,13 @@ pub struct LLMMutator {
 
 impl LLMMutator {
     pub fn new() -> Self {
-        let api_url = std::env::var(LLM_URL_ENV).unwrap_or_else(|_| DEFAULT_API_URL.to_string());
+        let api_url = env::var("IFB_LLM_URL").unwrap_or_else(|_| DEFAULT_API_URL.to_string());
+
         let client = Client::builder()
             .timeout(Duration::from_millis(500))
             .build()
             .unwrap_or_else(|_| Client::new());
+
         Self { api_url, client }
     }
 }
@@ -74,12 +76,7 @@ where
             ],
         };
 
-        let response = match self
-            .client
-            .post(&self.api_url)
-            .json(&request)
-            .send()
-        {
+        let response = match self.client.post(&self.api_url).json(&request).send() {
             Ok(resp) => resp,
             Err(_) => return Ok(MutationResult::Skipped),
         };
