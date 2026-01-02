@@ -1,0 +1,2 @@
+MapFeedback<libafl::observers::StdMapObserver<'_, u8, false>, DifferentIsNovel, libafl::observers::StdMapObserver<'_, u8, false>, MaxReducer>
+MapFeedback<libafl::observers::StdMapObserver<'_, u8, false>, DifferentIsNovel, libafl::observers::StdMapObserver<'_, u8, false>, MaxReducer>: HasObjective

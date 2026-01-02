@@ -1,0 +1,23 @@
+EJECUTA ESTOS COMANDOS EN TU TERMINAL:
+
+cd /home/test/IFB
+
+git add -A
+
+git commit -m "Trabajo completo: Integración LibAFL 0.15, correcciones aplicadas y documentación de errores
+
+- Refactorización completa hacia LibAFL 0.15 API
+- Actualizado fuzzer_main.rs con StdFuzzer, InProcessExecutor, StdMapObserver
+- Actualizado neuro_mutator.rs para ValueInput<Vec<u8>>
+- Múltiples correcciones aplicadas (StdState::new, InProcessExecutor::new, etc.)
+- Documentación completa del proceso: errores, intentos, recomendaciones
+- Archivos de estado: ESTADO_CRITICO.md, RECOMENDACION_FINAL.md
+- Estado actual: errores de trait bounds con LibAFL 0.15 API requieren más investigación"
+
+git push
+
+ALTERNATIVAMENTE, puedes ejecutar el script:
+
+chmod +x EJECUTAR_ESTOS_COMANDOS.sh
+./EJECUTAR_ESTOS_COMANDOS.sh
+

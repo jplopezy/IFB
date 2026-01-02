@@ -22,16 +22,18 @@ extern "C" {
 
 pub fn init_target() {}
 
-pub fn fuzz_iteration(input: &[u8]) {
-    let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| unsafe {
+pub fn fuzz_iteration(input: &[u8]) -> bool {
+    // NO catch_unwind - let ASan catch crashes and terminate the process
+    // Return true if execution completed normally, false if we should save this input
+    unsafe {
         let url = match CString::new(input) {
             Ok(value) => value,
-            Err(_) => return,
+            Err(_) => return true, // Invalid input, not interesting
         };
 
         let handle = curl_easy_init();
         if handle.is_null() {
-            return;
+            return true;
         }
 
         let _ = curl_easy_setopt(handle, CURLOPT_URL, url.as_ptr() as *const c_char);
@@ -39,5 +41,6 @@ pub fn fuzz_iteration(input: &[u8]) {
         let _ = curl_easy_perform(handle);
 
         curl_easy_cleanup(handle);
-    }));
+    }
+    true // Execution completed normally
 }

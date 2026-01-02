@@ -1,0 +1,2 @@
+libafl::state::StdState<libafl::corpus::InMemoryCorpus<libafl::inputs::ValueInput<Vec<u8>>>, libafl::inputs::ValueInput<Vec<u8>>, RomuDuoJrRand, libafl::corpus::InMemoryCorpus<libafl::inputs::ValueInput<Vec<u8>>>>
+libafl::state::StdState<libafl::corpus::InMemoryCorpus<libafl::inputs::ValueInput<Vec<u8>>>, libafl::inputs::ValueInput<Vec<u8>>, RomuDuoJrRand, libafl::corpus::InMemoryCorpus<libafl::inputs::ValueInput<Vec<u8>>>>: HasObjective

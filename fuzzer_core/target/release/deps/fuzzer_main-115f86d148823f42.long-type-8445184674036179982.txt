@@ -1,0 +1,2 @@
+MapFeedback<_, DifferentIsNovel, _, libafl_bolts::simd::MaxReducer>
+MapFeedback<_, DifferentIsNovel, _, libafl_bolts::simd::MaxReducer>: HasObjective

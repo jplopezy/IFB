@@ -1,0 +1,20 @@
+═══════════════════════════════════════════════════════════════════
+  EJECUTAR ESTE COMANDO PARA COMPILAR Y EJECUTAR EL FUZZER
+═══════════════════════════════════════════════════════════════════
+
+cd /home/test/IFB/fuzzer_core && \
+export IFB_STATIC_LIB_DIR="/home/test/IFB/cases/curl_easy/build/lib" && \
+export IFB_INCLUDE_DIR="/home/test/IFB/cases/curl_easy/build/include" && \
+export IFB_STATIC_LIBS="curl" && \
+export LD_PRELOAD=/usr/lib/gcc/x86_64-linux-gnu/13/libasan.so && \
+cargo build --release && \
+./target/release/fuzzer_main
+
+═══════════════════════════════════════════════════════════════════
+  O usa el script Python:
+═══════════════════════════════════════════════════════════════════
+
+python3 /home/test/IFB/execute_fuzzer.py
+
+═══════════════════════════════════════════════════════════════════
+

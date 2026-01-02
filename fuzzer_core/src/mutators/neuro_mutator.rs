@@ -1,35 +1,60 @@
+#[cfg(feature = "llm")]
 use std::env;
+#[cfg(feature = "llm")]
 use std::time::Duration;
 
-use libafl::inputs::{BytesInput, HasBytesVec, HasMetadata};
-use libafl::mutators::{MutationResult, Mutator};
-use libafl::prelude::{HasRand, Named, SerdeAny};
-use libafl::Error;
+#[cfg(feature = "llm")]
+use libafl::prelude::*;
+#[cfg(feature = "llm")]
+use libafl_bolts::prelude::SerdeAny;
+#[cfg(feature = "llm")]
 use reqwest::blocking::Client;
+#[cfg(feature = "llm")]
 use serde::{Deserialize, Serialize};
 
-const DEFAULT_API_URL: &str = "http://127.0.0.1:8000/v1/chat/completions";
+#[cfg(feature = "llm")]
+const DEFAULT_API_URL: &str = "http://127.0.0.1:11434/api/generate";
+#[cfg(feature = "llm")]
 const SYSTEM_PROMPT: &str =
-    "You are a fuzzing mutation engine. Mutate this input to cause edge cases. Return ONLY the raw string.";
+    "You are an expert fuzzing engine. Generate mutations designed to increase code coverage and find bugs. Return ONLY the raw string.";
 
+#[cfg(feature = "llm")]
 #[derive(Debug, Clone, Serialize, Deserialize, SerdeAny)]
 pub struct LLMHistoryMetadata {
     pub last_prompt: String,
     pub generation: u32,
 }
 
+#[cfg(feature = "llm")]
+impl SerdeAny for LLMHistoryMetadata {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
+    fn as_any_boxed(self: Box<Self>) -> Box<dyn std::any::Any> {
+        self
+    }
+    fn type_name(&self) -> &'static str {
+        std::any::type_name::<Self>()
+    }
+}
+
+#[cfg(feature = "llm")]
 #[derive(Debug, Clone)]
 pub struct LLMMutator {
     api_url: String,
     client: Client,
 }
 
+#[cfg(feature = "llm")]
 impl LLMMutator {
     pub fn new() -> Self {
         let api_url = env::var("IFB_LLM_URL").unwrap_or_else(|_| DEFAULT_API_URL.to_string());
 
         let client = Client::builder()
-            .timeout(Duration::from_millis(500))
+            .timeout(Duration::from_millis(10000))
             .build()
             .unwrap_or_else(|_| Client::new());
 
@@ -37,128 +62,99 @@ impl LLMMutator {
     }
 }
 
+#[cfg(feature = "llm")]
 impl Default for LLMMutator {
     fn default() -> Self {
         Self::new()
     }
 }
 
+#[cfg(feature = "llm")]
 impl Named for LLMMutator {
-    fn name(&self) -> &str {
-        "LLMMutator"
+    fn name(&self) -> &std::borrow::Cow<'static, str> {
+        &std::borrow::Cow::Borrowed("LLMMutator")
     }
 }
 
-impl<S> Mutator<BytesInput, S> for LLMMutator
+#[cfg(feature = "llm")]
+impl<S> Mutator<ValueInput<Vec<u8>>, S> for LLMMutator
 where
     S: HasRand,
-    BytesInput: HasMetadata,
 {
     fn mutate(
         &mut self,
         state: &mut S,
-        input: &mut BytesInput,
+        input: &mut ValueInput<Vec<u8>>,
         _stage_idx: i32,
     ) -> Result<MutationResult, Error> {
-        // Check for existing LLM history metadata
-        let existing_metadata = input.metadata::<LLMHistoryMetadata>();
-
-        // Determine probability: 10% if we have history (hot streak), 1% otherwise
-        let probability_threshold = if existing_metadata.is_some() { 10 } else { 100 };
-
-        if state.rand_mut().below(probability_threshold) != 0 {
+        // Probability: 10% chance to use LLM mutation
+        if state.rand_mut().below(std::num::NonZeroUsize::new(10).unwrap()) != 0 {
             return Ok(MutationResult::Skipped);
         }
 
-        let input_str = match std::str::from_utf8(input.bytes()) {
+        let bytes = input.sub_bytes(..);
+        let input_str = match std::str::from_utf8(&bytes) {
             Ok(value) => value,
             Err(_) => return Ok(MutationResult::Skipped),
         };
 
-        // Create the appropriate prompt based on history
-        let (user_prompt, generation) = if let Some(metadata) = existing_metadata {
-            // Evolutionary mode: We have successful history, make it more aggressive
-            let evolutionary_prompt = format!(
-                "You previously mutated this input using: '{}'. This worked and increased coverage. Now generate a MORE AGGRESSIVE variation of this specific attack vector. Make it even more likely to trigger edge cases or crashes. Return ONLY the raw string.",
-                metadata.last_prompt
-            );
-            (evolutionary_prompt, metadata.generation + 1)
-        } else {
-            // Fresh start mode: Generic mutation request
-            ("Mutate this input to find edge cases. Return ONLY the raw string.".to_string(), 1)
-        };
+        // Coverage-guided prompt: this input is in corpus, so it increased coverage
+        // Generate mutation to explore deeper paths
+        let user_prompt = format!(
+            "This input increased code coverage: '{}'. Generate a mutation that explores deeper paths and finds bugs. Return ONLY the raw string.",
+            input_str
+        );
 
-        let request = ChatCompletionRequest {
-            model: "local-model".to_string(),
-            messages: vec![
-                ChatMessage {
-                    role: "system".to_string(),
-                    content: SYSTEM_PROMPT.to_string(),
-                },
-                ChatMessage {
-                    role: "user".to_string(),
-                    content: user_prompt.clone(),
-                },
-            ],
+        // Ollama API request
+        let request = OllamaRequest {
+            model: "llama2:7b".to_string(),
+            prompt: user_prompt,
+            stream: false,
         };
 
         let response = match self.client.post(&self.api_url).json(&request).send() {
             Ok(resp) => resp,
-            Err(_) => return Ok(MutationResult::Skipped),
+            Err(e) => {
+                eprintln!("[NEURO] ❌ HTTP Error: {}", e);
+                return Ok(MutationResult::Skipped);
+            }
         };
 
         if !response.status().is_success() {
             return Ok(MutationResult::Skipped);
         }
 
-        let completion = match response.json::<ChatCompletionResponse>() {
+        let completion = match response.json::<OllamaResponse>() {
             Ok(parsed) => parsed,
-            Err(_) => return Ok(MutationResult::Skipped),
+            Err(e) => {
+                eprintln!("[NEURO] ❌ JSON Error: {}", e);
+                return Ok(MutationResult::Skipped);
+            }
         };
 
-        let Some(choice) = completion.choices.into_iter().next() else {
-            return Ok(MutationResult::Skipped);
-        };
-
-        let mutated = choice.message.content;
+        let mutated = completion.response.trim();
         if mutated.is_empty() {
             return Ok(MutationResult::Skipped);
         }
 
-        // Apply the mutation to the input
-        let bytes = input.bytes_mut();
-        bytes.clear();
-        bytes.extend_from_slice(mutated.as_bytes());
+        // Apply the mutation
+        *input = ValueInput::new(mutated.as_bytes().to_vec());
 
-        // Attach/update metadata with the mutation history
-        let history_metadata = LLMHistoryMetadata {
-            last_prompt: user_prompt,
-            generation,
-        };
-        input.add_metadata(history_metadata);
-
+        println!("[NEURO] 🧬 Coverage-guided LLM Mutation Applied: {} bytes", bytes.len());
         Ok(MutationResult::Mutated)
     }
 }
 
+#[cfg(feature = "llm")]
 #[derive(Debug, Serialize)]
-struct ChatCompletionRequest {
+struct OllamaRequest {
     model: String,
-    messages: Vec<ChatMessage>,
+    prompt: String,
+    stream: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct ChatMessage {
-    role: String,
-    content: String,
-}
-
+#[cfg(feature = "llm")]
 #[derive(Debug, Deserialize)]
-struct ChatCompletionResponse {
-    choices: Vec<ChatChoice>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ChatChoice {
-    message: ChatMessage,
+struct OllamaResponse {
+    response: String,
 }

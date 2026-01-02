@@ -10,8 +10,8 @@ else
   CC_BIN="clang"
 fi
 
-CFLAGS="-O1 -g -fPIC -fsanitize=address,fuzzer-no-link -fno-omit-frame-pointer"
-LDFLAGS="-fsanitize=address,fuzzer-no-link"
+CFLAGS="-O1 -g -fPIC -fsanitize=address,fuzzer-no-link -fno-omit-frame-pointer -fsanitize-coverage=trace-pc-guard"
+LDFLAGS="-fsanitize=address,fuzzer-no-link -fsanitize-coverage=trace-pc-guard"
 
 TMP_DIR="$(mktemp -d)"
 cleanup() {

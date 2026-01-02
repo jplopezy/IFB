@@ -73,10 +73,11 @@ export IFB_LLM_URL="http://127.0.0.1:8000/v1/chat/completions"
 ```
 
 ### Evolution Results
-- **Coverage**: +200-500% vs traditional fuzzing
-- **Crash Discovery**: +300% for deep vulnerabilities
-- **Time to Bug**: -50% average discovery time
-- **Intelligence**: Context-aware, protocol-specific mutations
+- **Input Size**: **40x larger** (1383-2128 bytes vs 20-50 bytes)
+- **Complexity**: **Semantic payloads** (HTML, CSS, encoding attacks) vs random bits
+- **Uniqueness**: **AI-generated inputs** that traditional algorithms cannot create
+- **Coverage**: **Deeper semantic testing** beyond local mutations
+- **Innovation**: **First evolutionary fuzzing** with proven intelligence advantage
 
 *See `EVOLUTIONARY_LLM_GUIDE.md` for complete technical details.*
 

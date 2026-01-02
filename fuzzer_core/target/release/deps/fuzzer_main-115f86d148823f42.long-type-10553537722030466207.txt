@@ -1,0 +1,4 @@
+MapFeedback<libafl::observers::StdMapObserver<'_, u8, false>, DifferentIsNovel, libafl::observers::StdMapObserver<'_, u8, false>, MaxReducer>
+libafl::events::SimpleEventManager<_, libafl::monitors::SimpleMonitor<{closure@src/bin/fuzzer_main.rs:91:38: 91:41}>, _>
+MapFeedback<libafl::observers::StdMapObserver<'_, u8, false>, DifferentIsNovel, libafl::observers::StdMapObserver<'_, u8, false>, MaxReducer>: EventFirer<libafl::inputs::ValueInput<Vec<u8>>, libafl::events::SimpleEventManager<_, libafl::monitors::SimpleMonitor<{closure@src/bin/fuzzer_main.rs:91:38: 91:41}>, _>>
+MapFeedback<libafl::observers::StdMapObserver<'_, u8, false>, DifferentIsNovel, libafl::observers::StdMapObserver<'_, u8, false>, MaxReducer>: EventRestarter<libafl::events::SimpleEventManager<_, libafl::monitors::SimpleMonitor<{closure@src/bin/fuzzer_main.rs:91:38: 91:41}>, _>>
