@@ -1,12 +1,12 @@
 # TARGET_CONFIG.md (Template)
 
-> Este archivo es tu checklist. Sin esto, no hay fuzzing estable.
+> This file is your checklist. No stability without it.
 
 ---
 
 ## TARGET_REPO_URL
 
-- URL del repositorio del target (git):
+- Git repository URL for the target:
 
 ```
 <REPLACE_ME>
@@ -16,15 +16,15 @@
 
 ## BUILD_FLAGS
 
-> Flags mínimos para fuzzing in-process y coverage usable.
+> Minimum flags for in-process fuzzing and usable coverage.
 
-Ejemplo:
+Example:
 
 ```
 -fPIC -O1 -g -fsanitize-coverage=trace-pc-guard,trace-cmp,8bit-counters
 ```
 
-Tu configuración:
+Your configuration:
 
 ```
 <REPLACE_ME>
@@ -34,21 +34,21 @@ Tu configuración:
 
 ## CONFLICTING_SYMBOLS
 
-> Elimina `main()` de la librería estática para evitar conflictos con el fuzzer.
+> Remove `main()` from the static library to avoid fuzzer conflicts.
 
-**Cómo encontrar `main.o`:**
+**Find `main.o`:**
 
 ```bash
 nm -g --defined-only build/lib/libtarget.a | grep ' main$'
 ```
 
-**Cómo removerlo:**
+**Remove it:**
 
 ```bash
 ar d build/lib/libtarget.a main.o
 ```
 
-Notas / símbolos conflictivos:
+Notes / conflicting symbols:
 
 ```
 <REPLACE_ME>
@@ -58,15 +58,15 @@ Notas / símbolos conflictivos:
 
 ## ENTRYPOINT_FUNCTION
 
-> La función de C/C++ que procesa los bytes.
+> The C/C++ function that processes input bytes.
 
-Ejemplo:
+Example:
 
 ```
 int process_packet(const uint8_t *buf, size_t len);
 ```
 
-Tu entrypoint:
+Your entrypoint:
 
 ```
 <REPLACE_ME>

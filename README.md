@@ -1,37 +1,37 @@
-# 🚀 Project IFB (In-Process Fuzzing Boilerplate)
+# 🚀 Instalación de Fuzzing Berreta (IFB)
 > *High Performance. Static Linking. Zero Sockets.*
 
-**Project IFB** es una plantilla agresiva y directa para fuzzing **in-process** con Rust + LibAFL. Si tu target es C/C++ y querés velocidad real (100k exec/s), esto es tu punto de partida.
+**Instalación de Fuzzing Berreta (IFB)** is a straight-to-the-point template for high-performance **in-process** fuzzing with Rust + LibAFL. If your target is C/C++ and you want real speed (100k exec/s), this is your starting line.
 
 ---
 
-## 💥 ¿Por qué usar IFB?
+## 💥 Why IFB?
 
-> Dejá de usar sockets. Fuzzeá a 100k exec/s linkeando tu target como librería.
+> Stop using sockets. Fuzz at 100k exec/s by linking your target as a library.
 
-**IFB = Binario único, sin forks, sin red, sin overhead.**
+**IFB = single binary, no forks, no network, no overhead.**
 
-- 🚀 **Speed**: elimina `fork()` y el kernel (hasta ~50x más rápido que AFL++).
-- 🧠 **Smart**: arquitectura basada en LibAFL.
-- 🛠 **Static**: guía para linkear `.a` directo al fuzzer.
-- 🩹 **Conflict Resolver**: patrones para resolver colisiones con `main()`.
+- 🚀 **Speed**: eliminates `fork()` and kernel overhead (up to ~50x faster than AFL++).
+- 🧠 **Smart**: LibAFL-powered architecture.
+- 🛠 **Static**: guides you to link `.a` archives directly into the fuzzer.
+- 🩹 **Conflict Resolver**: patterns to handle `main()` symbol collisions.
 
 ---
 
 ## ⚡ Quick Start
 
-1. **Editá el builder del target**
+1. **Edit the target builder**
    ```bash
    nano scripts/build_target.sh
    ```
 
-2. **Definí tus headers y libs**
-   - Revisá `fuzzer_core/headers.h` y `fuzzer_core/build.rs`.
+2. **Define your headers and libs**
+   - See `fuzzer_core/headers.h` and `fuzzer_core/build.rs`.
 
-3. **Implementá el harness**
+3. **Implement the harness**
    - `fuzzer_core/src/harness/mod.rs`
 
-4. **Fuzzeá**
+4. **Fuzz**
    ```bash
    cd fuzzer_core
    cargo run --release
@@ -78,4 +78,4 @@ project-ifb/
 
 ---
 
-*Project IFB (In-Process Fuzzing Boilerplate) — plantilla reusable para fuzzing estático y de alto rendimiento.*
+*Created by Juan Pablo Lopez Yacubian — Instalación de Fuzzing Berreta (IFB).* 
