@@ -1,59 +1,81 @@
 # 🚀 Project IFB (In-Process Fuzzing Boilerplate)
 > *High Performance. Static Linking. Zero Sockets.*
 
-![Rust](https://img.shields.io/badge/made_with-Rust-red) ![LibAFL](https://img.shields.io/badge/powered_by-LibAFL-green) ![License](https://img.shields.io/badge/license-MIT-blue)
+**Project IFB** es una plantilla agresiva y directa para fuzzing **in-process** con Rust + LibAFL. Si tu target es C/C++ y querés velocidad real (100k exec/s), esto es tu punto de partida.
 
-**Project IFB** es una plantilla de ingeniería para construir fuzzers **In-Process** de alto rendimiento para targets C/C++ complejos (Apache, Nginx, OpenSSL, etc.) sin la complejidad de configurar AFLNet ni el cuello de botella del Kernel TCP/IP.
+---
 
+## 💥 ¿Por qué usar IFB?
 
+> Dejá de usar sockets. Fuzzeá a 100k exec/s linkeando tu target como librería.
 
-## 🔥 ¿Por qué IFB?
+**IFB = Binario único, sin forks, sin red, sin overhead.**
 
-| Feature | Fuzzing Tradicional (AFLNet) | Project IFB (LibAFL In-Process) |
-| :--- | :--- | :--- |
-| **Arquitectura** | Network / Sockets | **Function Calls (Linkeado Estático)** |
-| **Overhead** | Kernel, Syscalls, Context Switch | **Cero (Instrucciones CPU puras)** |
-| **Velocidad** | ~200 - 2,000 exec/s | **> 50,000 exec/s** |
-| **Profundidad** | Superficial (Blackbox) | **Profunda (Whitebox/Snapshot)** |
-| **Crash Detection** | Timeout / Connection Reset | **Precisa (Signal Handler interno)** |
+- 🚀 **Speed**: elimina `fork()` y el kernel (hasta ~50x más rápido que AFL++).
+- 🧠 **Smart**: arquitectura basada en LibAFL.
+- 🛠 **Static**: guía para linkear `.a` directo al fuzzer.
+- 🩹 **Conflict Resolver**: patrones para resolver colisiones con `main()`.
 
-## 🛠 Requisitos
-
-- **Docker** (Recomendado para reproducibilidad)
-- **Rust Nightly**
-- **Clang 18+**
+---
 
 ## ⚡ Quick Start
 
-1.  **Clona este repo:**
-    ```bash
-    git clone [https://github.com/tu-usuario/project-ifb.git](https://github.com/tu-usuario/project-ifb.git)
-    cd project-ifb
-    ```
+1. **Editá el builder del target**
+   ```bash
+   nano scripts/build_target.sh
+   ```
 
-2.  **Define tu Target:**
-    Edita `TARGET_WORKSHEET.md`. Investiga qué librerías necesitas linkear y cuál es tu función de entrada.
+2. **Definí tus headers y libs**
+   - Revisá `fuzzer_core/headers.h` y `fuzzer_core/build.rs`.
 
-3.  **Prepara el Build Script:**
-    Copia `scripts/build_target_template.sh` a `scripts/build_target.sh` y rellena los TODOs para compilar tu target como librería estática (`.a`).
-    *¡No olvides el paso de eliminar el símbolo `main`!*
+3. **Implementá el harness**
+   - `fuzzer_core/src/harness/mod.rs`
 
-4.  **Implementa el Harness:**
-    Edita `fuzzer_core/src/harness/mod.rs`. Conecta los bytes de Rust con la función C de tu target.
-
-5.  **Fuzz:**
-    ```bash
-    cd fuzzer_core
-    cargo run --release
-    ```
-
-## 🧠 Filosofía "Build, Don't Configure"
-
-No configuramos un fuzzer externo. **Construimos** un binario personalizado que contiene al fuzzer y al target en el mismo espacio de memoria.
-
-1.  **Static Linking:** Convertimos el software objetivo en una librería (`libtarget.a`).
-2.  **Main Surgery:** Extirpamos quirúrgicamente el símbolo `main()` usando `ar d`.
-3.  **Virtual Context:** Simulamos el entorno (configuraciones, memoria) dentro del harness.
+4. **Fuzzeá**
+   ```bash
+   cd fuzzer_core
+   cargo run --release
+   ```
 
 ---
-*Created by [Tu Nombre] - Based on the IFB Methodology.*
+
+## 🛠 Requirements
+
+- Docker
+- Rust Nightly
+- Clang 18+
+
+---
+
+## 📁 Repo Layout
+
+```
+project-ifb/
+  ├── README.md
+  ├── TARGET_CONFIG.md
+  ├── docker/
+  │   └── Dockerfile
+  ├── scripts/
+  │   ├── build_target.sh
+  │   └── setup_env.sh
+  ├── fuzzer_core/
+  │   ├── Cargo.toml
+  │   ├── build.rs
+  │   ├── headers.h
+  │   └── src/
+  │       ├── bin/
+  │       │   └── fuzzer_main.rs
+  │       ├── bindings/
+  │       │   └── mod.rs
+  │       ├── harness/
+  │       │   └── mod.rs
+  │       └── mutators/
+  │           └── neuro_mutator.rs
+  └── docs/
+      ├── ARCHITECTURE.md
+      └── TROUBLESHOOTING.md
+```
+
+---
+
+*Project IFB (In-Process Fuzzing Boilerplate) — plantilla reusable para fuzzing estático y de alto rendimiento.*

@@ -1,0 +1,12 @@
+[package]
+name = "ifb_fuzzer_core"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+[dependencies]
+libafl = { version = "0.11", default-features = false, features = ["std"] }
+libc = "0.2"
+
+[build-dependencies]
+bindgen = "0.69"
