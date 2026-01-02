@@ -3,12 +3,14 @@ use std::time::Duration;
 use libafl::inputs::BytesInput;
 use libafl::mutators::{MutationResult, Mutator};
 use libafl::prelude::Named;
+use libafl::state::HasRand;
 use libafl::Error;
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 
 const DEFAULT_API_URL: &str = "http://127.0.0.1:8000/v1/chat/completions";
 const SYSTEM_PROMPT: &str = "You are a fuzzing mutation engine. Mutate this input to cause edge cases. Return ONLY the raw string.";
+const LLM_URL_ENV: &str = "IFB_LLM_URL";
 
 #[derive(Debug, Clone)]
 pub struct LLMMutator {
@@ -17,21 +19,19 @@ pub struct LLMMutator {
 }
 
 impl LLMMutator {
-    pub fn new(api_url: impl Into<String>) -> Self {
+    pub fn new() -> Self {
+        let api_url = std::env::var(LLM_URL_ENV).unwrap_or_else(|_| DEFAULT_API_URL.to_string());
         let client = Client::builder()
             .timeout(Duration::from_millis(500))
             .build()
             .unwrap_or_else(|_| Client::new());
-        Self {
-            api_url: api_url.into(),
-            client,
-        }
+        Self { api_url, client }
     }
 }
 
 impl Default for LLMMutator {
     fn default() -> Self {
-        Self::new(DEFAULT_API_URL)
+        Self::new()
     }
 }
 
@@ -41,13 +41,20 @@ impl Named for LLMMutator {
     }
 }
 
-impl<S> Mutator<BytesInput, S> for LLMMutator {
+impl<S> Mutator<BytesInput, S> for LLMMutator
+where
+    S: HasRand,
+{
     fn mutate(
         &mut self,
-        _state: &mut S,
+        state: &mut S,
         input: &mut BytesInput,
         _stage_idx: i32,
     ) -> Result<MutationResult, Error> {
+        if state.rand_mut().below(100) != 0 {
+            return Ok(MutationResult::Skipped);
+        }
+
         let input_str = match std::str::from_utf8(input.bytes()) {
             Ok(value) => value,
             Err(_) => return Ok(MutationResult::Skipped),
