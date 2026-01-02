@@ -1,0 +1,27 @@
+EJECUTA ESTOS COMANDOS PARA SINCRONIZAR Y PROBAR:
+
+cd /home/test/IFB
+
+# Sincronizar
+git pull
+
+# Ver qué cambió
+git log --oneline -5
+git diff HEAD~1 HEAD --name-only
+
+# Compilar y probar
+cd fuzzer_core
+export IFB_STATIC_LIB_DIR="/home/test/IFB/cases/curl_easy/build/lib"
+export IFB_INCLUDE_DIR="/home/test/IFB/cases/curl_easy/build/include"
+export IFB_STATIC_LIBS="curl"
+
+cargo build --release
+
+# Si compila exitosamente:
+./target/release/fuzzer_main
+
+O EJECUTA EL SCRIPT:
+
+chmod +x test_update.sh
+./test_update.sh
+

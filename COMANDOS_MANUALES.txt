@@ -1,0 +1,16 @@
+EJECUTA ESTOS COMANDOS MANUALMENTE:
+
+# 1. Ver cómo se corrigió en el PR:
+cd /home/test/IFB
+git show 4aa7b99:fuzzer_core/src/bin/fuzzer_main.rs | grep -A 15 "InProcessExecutor::new"
+
+# 2. Ver cómo se crean los stages en el PR:
+git show 4aa7b99:fuzzer_core/src/bin/fuzzer_main.rs | grep -A 10 "stages\|MutationalStage\|mutator"
+
+# 3. Compilar y ver errores:
+cd /home/test/IFB/fuzzer_core
+export IFB_STATIC_LIB_DIR="/home/test/IFB/cases/curl_easy/build/lib"
+export IFB_INCLUDE_DIR="/home/test/IFB/cases/curl_easy/build/include"
+export IFB_STATIC_LIBS="curl"
+cargo build --release 2>&1 | tail -50
+

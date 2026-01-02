@@ -13,6 +13,9 @@ use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "llm")]
+use super::url_parser::ParsedURL;
+
+#[cfg(feature = "llm")]
 const DEFAULT_API_URL: &str = "http://127.0.0.1:11434/api/generate";
 #[cfg(feature = "llm")]
 const SYSTEM_PROMPT: &str =
@@ -85,23 +88,69 @@ where
         &mut self,
         state: &mut S,
         input: &mut ValueInput<Vec<u8>>,
-        _stage_idx: i32,
     ) -> Result<MutationResult, Error> {
-        // Probability: 10% chance to use LLM mutation
-        if state.rand_mut().below(std::num::NonZeroUsize::new(10).unwrap()) != 0 {
+        // Adaptive probability: 
+        // - 30% base chance (more aggressive than 10%)
+        // - LLM helps when corpus stagnates by generating more creative mutations
+        // - The structure-aware mutator handles most mutations, LLM provides "escape" when stuck
+        if state.rand_mut().below(std::num::NonZeroUsize::new(10).unwrap()) >= 3 {
             return Ok(MutationResult::Skipped);
         }
 
         let bytes = input.sub_bytes(..);
-        let input_str = match std::str::from_utf8(&bytes) {
+        let input_str = match std::str::from_utf8(bytes.as_slice()) {
             Ok(value) => value,
             Err(_) => return Ok(MutationResult::Skipped),
         };
 
-        // Coverage-guided prompt: this input is in corpus, so it increased coverage
-        // Generate mutation to explore deeper paths
+        // Parse URL to understand structure
+        let parsed_url = super::url_parser::ParsedURL::parse(input_str);
+        let url_context = if let Some(ref parsed) = parsed_url {
+            format!(
+                "URL Structure: scheme='{}', host='{}', port={:?}, path='{}', query='{}', fragment='{}'",
+                parsed.scheme, parsed.host, parsed.port, parsed.path, parsed.query, parsed.fragment
+            )
+        } else {
+            format!("Raw URL (could not parse): '{}'", input_str)
+        };
+
+        // Get cURL knowledge base context
+        let curl_knowledge = super::curl_knowledge::get_curl_knowledge_context();
+
+        // Note: Metadata is stored in Testcase, not in Input
+        // For now, we'll use the input itself as context
+        let metadata_context = format!(
+            "This input is in the corpus, meaning it increased code coverage. Generate a mutation that explores deeper paths."
+        );
+
+        // Build intelligent prompt with full context
         let user_prompt = format!(
-            "This input increased code coverage: '{}'. Generate a mutation that explores deeper paths and finds bugs. Return ONLY the raw string.",
+            r#"You are an expert fuzzing engine for cURL/libcurl. Your goal is to generate URL mutations that increase code coverage and find security vulnerabilities.
+
+CONTEXT:
+{}
+
+CURL KNOWLEDGE BASE:
+{}
+
+PREVIOUS MUTATION INFO:
+{}
+
+CURRENT INPUT:
+'{}'
+
+TASK:
+Generate a mutated URL that:
+1. Is syntactically valid (or close to valid) for cURL
+2. Explores edge cases and potential vulnerabilities
+3. Uses knowledge of cURL's supported protocols, headers, and URL schemes
+4. If previous mutation worked on a specific component, focus on that component
+5. Incorporates patterns from the knowledge base (malformed paths, special characters, etc.)
+
+Return ONLY the mutated URL string, nothing else."#,
+            url_context,
+            curl_knowledge,
+            metadata_context,
             input_str
         );
 

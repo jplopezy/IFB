@@ -10,7 +10,7 @@ llm = ["ini", "toml", "reqwest", "serde", "serde_json"]
 
 [dependencies]
 libafl = { version = "0.15", default-features = false, features = ["std", "prelude"] }
-libafl_bolts = { version = "0.15", default-features = false, features = ["std"] }
+libafl_bolts = { version = "0.15", default-features = false, features = ["std", "serdeany_autoreg"] }
 libc = "0.2"
 ctrlc = "3.4"
 rand = "0.8"

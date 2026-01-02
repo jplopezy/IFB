@@ -1,0 +1,4 @@
+libafl::events::SimpleEventManager<_, libafl::monitors::SimpleMonitor<{closure@src/bin/fuzzer_main.rs:91:38: 91:41}>, _>
+libafl::events::SimpleEventManager<_, libafl::monitors::SimpleMonitor<{closure@src/bin/fuzzer_main.rs:91:38: 91:41}>, _>: HasExecutions
+libafl::events::SimpleEventManager<_, libafl::monitors::SimpleMonitor<{closure@src/bin/fuzzer_main.rs:91:38: 91:41}>, _>: HasSolutions<libafl::inputs::ValueInput<Vec<u8>>>
+libafl::events::SimpleEventManager<_, libafl::monitors::SimpleMonitor<{closure@src/bin/fuzzer_main.rs:91:38: 91:41}>, _>: HasCurrentTestcase<libafl::inputs::ValueInput<Vec<u8>>>

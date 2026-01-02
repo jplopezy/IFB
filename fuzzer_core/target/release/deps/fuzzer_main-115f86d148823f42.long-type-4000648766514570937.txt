@@ -1,0 +1,2 @@
+libafl::events::SimpleEventManager<_, libafl::monitors::SimpleMonitor<{closure@src/bin/fuzzer_main.rs:91:38: 91:41}>, _>
+libafl::events::SimpleEventManager<_, libafl::monitors::SimpleMonitor<{closure@src/bin/fuzzer_main.rs:91:38: 91:41}>, _>: HasObjective
