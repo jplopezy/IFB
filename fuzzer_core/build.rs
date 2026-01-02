@@ -6,6 +6,8 @@ fn main() {
     println!("cargo:rerun-if-env-changed=IFB_STATIC_LIBS");
     println!("cargo:rerun-if-env-changed=IFB_STATIC_LIB_DIR");
     println!("cargo:rerun-if-env-changed=IFB_ALLOWLIST");
+    println!("cargo:rerun-if-env-changed=IFB_INCLUDE_DIR");
+    println!("cargo:rerun-if-env-changed=IFB_LINK_ASAN");
 
     let headers = PathBuf::from("src/wrapper.h");
     let allowlist = env::var("IFB_ALLOWLIST").unwrap_or_else(|_| ".*".to_string());
@@ -21,9 +23,7 @@ fn main() {
         builder = builder.clang_arg(format!("-I{include_dir}"));
     }
 
-    let bindings = builder
-        .generate()
-        .expect("Unable to generate bindings");
+    let bindings = builder.generate().expect("Unable to generate bindings");
 
     let out_path = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR not set"));
     bindings
@@ -38,11 +38,13 @@ fn main() {
         for lib in libs.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()) {
             println!("cargo:rustc-link-lib=static={lib}");
         }
+    } else if pkg_config::Config::new().probe("libcurl").is_ok() {
+        // libcurl found via pkg-config; link flags are emitted automatically.
+    } else {
+        println!("cargo:warning=libcurl not found via pkg-config. Set IFB_STATIC_LIBS and IFB_STATIC_LIB_DIR to link a custom build.");
     }
 
-    // Add dynamic libraries
-    println!("cargo:rustc-link-lib=psl");
-
-    // Add ASan library since cURL was compiled with ASan
-    println!("cargo:rustc-link-lib=asan");
+    if env::var("IFB_LINK_ASAN").is_ok() {
+        println!("cargo:rustc-link-lib=asan");
+    }
 }

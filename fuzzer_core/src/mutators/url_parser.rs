@@ -3,13 +3,13 @@
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ParsedURL {
-    pub scheme: String,      // http, https, ftp
-    pub host: String,        // example.com
-    pub port: Option<u16>,   // 80, 443, 8080
-    pub path: String,        // /path/to/resource
-    pub query: String,       // ?key=value&foo=bar
-    pub fragment: String,    // #section
-    pub userinfo: String,    // user:pass@
+    pub scheme: String,    // http, https, ftp
+    pub host: String,      // example.com
+    pub port: Option<u16>, // 80, 443, 8080
+    pub path: String,      // /path/to/resource
+    pub query: String,     // ?key=value&foo=bar
+    pub fragment: String,  // #section
+    pub userinfo: String,  // user:pass@
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -39,7 +39,7 @@ impl ParsedURL {
         if let Some(scheme_end) = url.find("://") {
             scheme = url[..scheme_end].to_string();
             let after_scheme = &url[scheme_end + 3..];
-            
+
             // Find userinfo (user:pass@)
             let (auth_part, rest) = if let Some(at_pos) = after_scheme.find('@') {
                 userinfo = after_scheme[..at_pos].to_string();
@@ -47,7 +47,7 @@ impl ParsedURL {
             } else {
                 (after_scheme, after_scheme)
             };
-            
+
             // Find host and port
             let (host_part, path_part) = if let Some(slash_pos) = auth_part.find('/') {
                 (&auth_part[..slash_pos], &auth_part[slash_pos..])
@@ -58,7 +58,7 @@ impl ParsedURL {
             } else {
                 (auth_part, "")
             };
-            
+
             // Parse host:port
             if let Some(colon_pos) = host_part.rfind(':') {
                 // Check if it's a port (not IPv6)
@@ -75,7 +75,7 @@ impl ParsedURL {
             } else {
                 host = host_part.to_string();
             }
-            
+
             // Parse path, query, fragment
             let full_path = if path_part.is_empty() {
                 if let Some(query_pos) = rest.find('?') {
@@ -88,7 +88,7 @@ impl ParsedURL {
             } else {
                 path_part
             };
-            
+
             if let Some(query_pos) = full_path.find('?') {
                 path = full_path[..query_pos].to_string();
                 let after_query = &full_path[query_pos + 1..];
@@ -110,8 +110,16 @@ impl ParsedURL {
         }
 
         Some(ParsedURL {
-            scheme: if scheme.is_empty() { "http".to_string() } else { scheme },
-            host: if host.is_empty() { "localhost".to_string() } else { host },
+            scheme: if scheme.is_empty() {
+                "http".to_string()
+            } else {
+                scheme
+            },
+            host: if host.is_empty() {
+                "localhost".to_string()
+            } else {
+                host
+            },
             port,
             path,
             query,
@@ -123,38 +131,38 @@ impl ParsedURL {
     /// Serialize back to URL string
     pub fn to_string(&self) -> String {
         let mut url = String::new();
-        
+
         if !self.scheme.is_empty() {
             url.push_str(&self.scheme);
             url.push_str("://");
         }
-        
+
         if !self.userinfo.is_empty() {
             url.push_str(&self.userinfo);
             url.push('@');
         }
-        
+
         url.push_str(&self.host);
-        
+
         if let Some(p) = self.port {
             url.push(':');
             url.push_str(&p.to_string());
         }
-        
+
         if !self.path.is_empty() {
             url.push_str(&self.path);
         }
-        
+
         if !self.query.is_empty() {
             url.push('?');
             url.push_str(&self.query);
         }
-        
+
         if !self.fragment.is_empty() {
             url.push('#');
             url.push_str(&self.fragment);
         }
-        
+
         url
     }
 
@@ -218,4 +226,3 @@ mod tests {
         assert!(serialized.contains("#frag"));
     }
 }
-
