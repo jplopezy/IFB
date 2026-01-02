@@ -2,12 +2,12 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
-    println!("cargo:rerun-if-changed=headers.h");
+    println!("cargo:rerun-if-changed=src/wrapper.h");
     println!("cargo:rerun-if-env-changed=IFB_STATIC_LIBS");
     println!("cargo:rerun-if-env-changed=IFB_STATIC_LIB_DIR");
     println!("cargo:rerun-if-env-changed=IFB_ALLOWLIST");
 
-    let headers = PathBuf::from("headers.h");
+    let headers = PathBuf::from("src/wrapper.h");
     let allowlist = env::var("IFB_ALLOWLIST").unwrap_or_else(|_| ".*".to_string());
 
     let mut builder = bindgen::Builder::default()
